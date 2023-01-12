@@ -1,17 +1,4 @@
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Container,
-  Grid,
-  Input,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Container, Grid, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { Form, FormikProvider, useFormik } from 'formik';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -22,19 +9,30 @@ import { API_URL } from '../../constant/defaultValues';
 
 function CreateProduct() {
   const [category, setCategory] = useState([]);
-  const [colors, setColors] = useState([]);
-  const navigate=useNavigate()
+  // const [colors, setColors] = useState([]);
+  const navigate = useNavigate();
   const CreateProductSchema = Yup.object().shape({
     name: Yup.string().required(),
     price: Yup.number().required(),
     offer: Yup.number().required(),
     description: Yup.string().required(),
     image: Yup.array().min(1).required(),
-    colors: Yup.array().min(1).required(),
+    // colors: Yup.array().min(1).required(),
     rating: Yup.string().required(),
   });
   const formik = useFormik({
-    initialValues: { name: '', price: '', description: '', image: [], colors: [], offer: '', rating: '', category: '' },
+    initialValues: {
+      name: '',
+      price: '',
+      description: '',
+      image: [],
+      size: [10],
+      offer: '',
+      rating: '',
+      category: '',
+      deliveryFee: '',
+      details: { ram: '', processor: '', frontCam: '', rearCam: '', display: '', battery: '' },
+    },
     validationSchema: CreateProductSchema,
     onSubmit: (values) => {
       const formdata = new FormData();
@@ -46,13 +44,21 @@ function CreateProduct() {
           });
           return;
         }
+        if (value === 'details') {
+          Object.keys(values.details).forEach((key) => {
+            formdata.append(`details[${key}]`, values.details[key]);
+          });
+          return;
+        }
         formdata.append(value, values[value]);
       });
-      axios.post(`${API_URL}/api/v1/products`, formdata, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
-      }).then((res)=>{
-        navigate('/dashboard/products')
-      });
+      axios
+        .post(`${API_URL}/api/v1/products`, formdata, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+        })
+        .then((res) => {
+          navigate('/dashboard/products');
+        });
     },
   });
   const { getFieldProps, errors, touched, handleSubmit, values, setFieldValue } = formik;
@@ -73,9 +79,9 @@ function CreateProduct() {
         setCategory(res.data);
       });
   }, []);
-  useEffect(() => {
-    setFieldValue('colors', colors);
-  }, [colors]);
+  // useEffect(() => {
+  //   setFieldValue('colors', colors);
+  // }, [colors]);
   return (
     <>
       <Helmet>
@@ -122,6 +128,12 @@ function CreateProduct() {
                     error={Boolean(touched.rating && errors.rating)}
                     helperText={touched.rating && errors.rating}
                   />
+                  <TextField
+                    label="Delivery fee"
+                    {...getFieldProps('deliveryFee')}
+                    error={Boolean(touched.deliveryFee && errors.deliveryFee)}
+                    helperText={touched.deliveryFee && errors.deliveryFee}
+                  />
                   <Select
                     label="Category"
                     {...getFieldProps('category')}
@@ -132,24 +144,61 @@ function CreateProduct() {
                       <MenuItem value={obj._id}>{obj.name}</MenuItem>
                     ))}
                   </Select>
-                  <Stack direction={'row'} spacing={1}>
-                    {colors.map((color) => (
-                      <Box height={30} width={30} sx={{ bgcolor: color }} />
-                    ))}
-                  </Stack>
-                  <label htmlFor="raised-button-color">
-                    <Stack direction={'row'} alignItems="center" spacing={2}>
-                      <input
-                        className={'raised-button-color'}
-                        id="raised-button-color"
-                        type="color"
-                        onBlur={(e) => setColors((ps) => [...ps, e.target.value])}
-                      />
-                      <Button variant="contained" component="span">
-                        Color
-                      </Button>
+                  <Typography variant="subtitle1">Other details</Typography>
+                  <TextField
+                    label="Ram"
+                    {...getFieldProps('details.ram')}
+                    // error={Boolean(touched.details?.ram && errors.details?.ram)}
+                    // helperText={touched.details?.ram && errors.details?.ram}
+                  />
+                  <TextField
+                    label="Processor"
+                    {...getFieldProps('details.processor')}
+                    // error={Boolean(touched.details.processor && errors.details.processor)}
+                    // helperText={touched.details.processor && errors.details.processor}
+                  />
+                  <TextField
+                    label="Front Cam"
+                    {...getFieldProps('details.frontCam')}
+                    // error={Boolean(touched.details.frontCam && errors.details.frontCam)}
+                    // helperText={touched.details.frontCam && errors.details.frontCam}
+                  />
+                  <TextField
+                    label="Rear Cam"
+                    {...getFieldProps('details.rearCam')}
+                    // error={Boolean(touched.details.rearCam && errors.details.rearCam)}
+                    // helperText={touched.details.rearCam && errors.details.rearCam}
+                  />
+                  <TextField
+                    label="Display"
+                    {...getFieldProps('details.display')}
+                    // error={Boolean(touched.details.display && errors.details.display)}
+                    // helperText={touched.details.display && errors.details.display}
+                  />
+                  <TextField
+                    label="Battery"
+                    {...getFieldProps('details.battery')}
+                    // error={Boolean(touched.details.battery && errors.details.battery)}
+                    // helperText={touched.details.battery && errors.details.battery}
+                  />
+                  {/* <Stack direction={'row'} spacing={1}>
+                      {colors.map((color) => (
+                        <Box height={30} width={30} sx={{ bgcolor: color }} />
+                      ))}
                     </Stack>
-                  </label>
+                    <label htmlFor="raised-button-color">
+                      <Stack direction={'row'} alignItems="center" spacing={2}>
+                        <input
+                          className={'raised-button-color'}
+                          id="raised-button-color"
+                          type="color"
+                          onBlur={(e) => setColors((ps) => [...ps, e.target.value])}
+                        />
+                        <Button variant="contained" component="span">
+                          Color
+                        </Button>
+                      </Stack>
+                    </label> */}
                   <Stack direction={'row'}>
                     {values.image.map((obj, i) => (
                       <Box
